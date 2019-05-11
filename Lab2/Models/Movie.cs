@@ -38,6 +38,8 @@ namespace Lab2.Models
         [EnumDataType(typeof(MovieWatched))]
         public MovieWatched MovieWatched { get; set; }
 
+        public List<Comment> Comments { get; set; }
+
 
     }
 }

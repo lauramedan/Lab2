@@ -23,7 +23,7 @@ namespace Lab2.Controllers
         [HttpGet]
         public IEnumerable<Movie> Get([FromQuery]DateTime? from, [FromQuery]DateTime? to)
         {
-            IQueryable<Movie> result = context.Movies;
+            IQueryable<Movie> result = context.Movies.Include(m => m.Comments);
             if (from == null && to == null)
             {
                 return result;
