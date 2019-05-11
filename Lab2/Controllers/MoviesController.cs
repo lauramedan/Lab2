@@ -36,7 +36,7 @@ namespace Lab2.Controllers
             {
                 result = result.Where(m => m.DateAdded <= to); 
             }
-            result = result.AsQueryable().OrderBy(m => m.YearOfRelease);
+            result = result.AsQueryable().OrderByDescending(m => m.YearOfRelease);
             
             // result = result.Where(m => m.YearOfRelease.OrderByDescending());
             // result.orderby m.YearOfRelease descending;
