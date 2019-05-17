@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lab2.Models;
+using Lab2.Service;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,108 +15,137 @@ namespace Lab2.Controllers
     public class MoviesController : ControllerBase
     {
 
-        private MoviesDbContext context;
-        public MoviesController(MoviesDbContext context)
+        private IMovieService movieService;
+        public MoviesController(IMovieService movieService)
         {
-            this.context = context;
+            this.movieService = movieService;
         }
 
-        // GET: api/Flowers
+        /// <summary>
+        /// GET ALL MOVIES.
+        /// </summary>
+        /// <param name="from">Optional, filter by minimum DateAdded.</param>
+        /// <param name="to">Optional, filter by maximum DateAdded.</param>
+        /// <returns>A list of Movie objects.</returns>
+        // GET: api/Movies
         [HttpGet]
         public IEnumerable<Movie> Get([FromQuery]DateTime? from, [FromQuery]DateTime? to)
         {
-            IQueryable<Movie> result = context.Movies.Include(m => m.Comments);
-            if (from == null && to == null)
-            {
-                return result;
-            }
-            if (from != null)
-            {
-                result = result.Where(m => m.DateAdded >= from);
-            }
-            if (to != null)
-            {
-                result = result.Where(m => m.DateAdded <= to); 
-            }
-            result = result.AsQueryable().OrderByDescending(m => m.YearOfRelease);
-            
-            // result = result.Where(m => m.YearOfRelease.OrderByDescending());
-            // result.orderby m.YearOfRelease descending;
-
-            return result;
+            return movieService.GetAll(from, to);
         }
 
-        // GET: api/Movies
-        //[HttpGet]
-        //public IEnumerable<Movie> Get()
-        //{
-         //   return context.Movies;
-        //}
 
-        // GET: api/Movies/5
+        /// <summary>
+        /// GET MOVIE BY ID
+        /// </summary>
+        /// <param name="id">Movie id</param>
+        /// <returns>Movie</returns>
         [HttpGet("{id}", Name = "Get")]
         public IActionResult Get(int id)
         {
-            var existing = context.Movies.FirstOrDefault(movie => movie.Id == id);
-            if (existing == null)
+            var found = movieService.GetById(id);
+            if (found == null)
             {
                 return NotFound();
             }
-
-            return Ok(existing);
+            return Ok(found);
         }
 
 
-        // GET: api/Movies/???
-        //[HttpGet("{d1}/{d2}", Name = "Get")]
-        //public IEnumerable<Movie> Get(DateTime d1, DateTime d2)
-        //{
-        //    var filteredMovies = from m in context.Movies
-        //                         where m.DateAdded >= d1 && m.DateAdded <= d2
-        //                         orderby m.YearOfRelease descending
-        //                         select m;
-
-        //    return filteredMovies;
-        //}
-
-
-        // POST: api/Movies
+        /// <summary>
+        /// ADD A MOVIE.
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     POST /movies
+        ///    {
+        ///        "title": "Cloud Atlas",
+        ///        "description": "Explores how the actions and consequences of individual lives impact one another throughout the past, the present and the future.",
+        ///        "movieGenre": 3,
+        ///        "duration": 172,
+        ///        "yearOfRelease": 2012,
+        ///        "director": "Wachowski",
+        ///        "dateAdded": "2017-03-04T11:40:00",
+        ///        "rating": 9,
+        ///        "movieWatched": 0,
+        ///        "comments": [
+        ///            {
+        ///                "text": "a good movie",
+        ///                "important": false
+        ///            },
+        ///            {
+        ///                "text": "a thrilling movie",
+        ///                "important": true
+        ///            }
+        ///        ]
+        ///    }         
+        ///</remarks>
+        /// <param name="movie">The movie to add.</param>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
         public void Post([FromBody] Movie movie)
         {
-            context.Movies.Add(movie);
-            context.SaveChanges();
+            movieService.Create(movie);
         }
 
-        // PUT: api/Movies/5
+        /// <summary>
+        /// UPSERT MOVIE (Update/Insert Movie)
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     PUT /movies
+        ///    {
+        ///        "id": 4,
+        ///        "title": "Psycho",
+        ///        "description": "It stars Anthony Perkins, Janet Leigh, John Gavin, Vera Miles, and Martin Balsam, and was based on the 1959 novel of the same name by Robert Bloch.",
+        ///        "movieGenre": 3,
+        ///        "duration": 109,
+        ///        "yearOfRelease": 1960,
+        ///        "director": "Alfred Hitchcock",
+        ///        "dateAdded": "2016-07-04T09:30:00",
+        ///        "rating": 9,
+        ///        "movieWatched": 0,
+        ///        "comments": [
+        ///            {
+        ///                "id": 3,
+        ///                "text": "an intense movie",
+        ///                "important": false
+        ///            },
+        ///            {
+        ///                "id": 4,
+        ///                "text": "thrilling scenes",
+        ///                "important": true
+        ///            }
+        ///        ]
+        ///    }
+        ///</remarks>
+        /// <param name="id">Movie id</param>
+        /// <param name="movie">The Movie to update/insert</param>
+        /// <returns>Updated/Inserted Movie</returns>
         [HttpPut("{id}")]
         public IActionResult Put(int id, [FromBody] Movie movie)
         {
-            var existing = context.Movies.AsNoTracking().FirstOrDefault(m => m.Id == id);
-            if (existing == null)
-            {
-                context.Movies.Add(movie);
-                context.SaveChanges();
-                return Ok(movie);
-            }
-            movie.Id = id;
-            context.Movies.Update(movie);
-            context.SaveChanges();
-            return Ok(movie);
+            var result = movieService.Upsert(id, movie);
+            return Ok(result);
         }
 
-        // DELETE: api/ApiWithActions/5
+        /// <summary>
+        /// DELETE MOVIE
+        /// </summary>
+        /// <param name="id">Movie id</param>
+        /// <returns>Deleted Movie</returns>
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var existing = context.Movies.FirstOrDefault(movie => movie.Id == id);
-            if (existing == null)
+            var result = movieService.Delete(id);
+            if (result == null)
             {
                 return NotFound();
             }
-            context.Movies.Remove(existing);
-            context.SaveChanges();
-            return Ok();
+            return Ok(result);
         }
     }
 }
