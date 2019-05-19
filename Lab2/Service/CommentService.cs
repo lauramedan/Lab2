@@ -22,17 +22,47 @@ namespace Lab2.Service
             this.context = context;
         }
 
+        //public IEnumerable<CommentGetModel> GetAll(string filter)
+        //{
+        //    IQueryable<Comment> result = context.Comments;
+
+        //    result = result.Where(c => c.Text.Contains(filter));
+
+        //    return result.Select(c => CommentGetModel.FromComment(c));
+        //}
+
         public IEnumerable<CommentGetModel> GetAll(string filter)
         {
-            IQueryable<Comment> result = context.Comments;
+            IQueryable<Movie> result = context.Movies.Include(c => c.Comments);
 
-            result = result.Where(c => c.Text.Contains(filter));
+            List<CommentGetModel> resultComments = new List<CommentGetModel>();
 
-            return result.Select(c => CommentGetModel.FromComment(c));
+            foreach (Movie m in result)
+            {
+                m.Comments.ForEach(c =>
+                {
+
+                    if (c.Text.Contains(filter))
+                    {
+                        CommentGetModel comment = new CommentGetModel
+                        {
+                            Id = c.Id,
+                            Important = c.Important,
+                            Text = c.Text,
+                            MovieId = m.Id
+
+                        };
+                        resultComments.Add(comment);
+
+                    }
+                });
+            }
+
+            return resultComments;
         }
 
 
 
 
-    }
+        }
 }
