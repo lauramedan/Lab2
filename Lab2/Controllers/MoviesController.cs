@@ -41,6 +41,8 @@ namespace Lab2.Controllers
         /// <param name="id">Movie id</param>
         /// <returns>Movie</returns>
         [HttpGet("{id}", Name = "Get")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Get(int id)
         {
             var found = movieService.GetById(id);
