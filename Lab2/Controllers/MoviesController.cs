@@ -29,6 +29,8 @@ namespace Lab2.Controllers
         /// <returns>A list of Movie objects.</returns>
         // GET: api/Movies
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IEnumerable<Movie> Get([FromQuery]DateTime? from, [FromQuery]DateTime? to)
         {
             return movieService.GetAll(from, to);
@@ -128,6 +130,8 @@ namespace Lab2.Controllers
         /// <param name="movie">The Movie to update/insert</param>
         /// <returns>Updated/Inserted Movie</returns>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult Put(int id, [FromBody] Movie movie)
         {
             var result = movieService.Upsert(id, movie);
@@ -140,6 +144,8 @@ namespace Lab2.Controllers
         /// <param name="id">Movie id</param>
         /// <returns>Deleted Movie</returns>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IActionResult Delete(int id)
         {
             var result = movieService.Delete(id);
