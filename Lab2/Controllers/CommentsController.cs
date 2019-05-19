@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lab2.Models;
 using Lab2.Service;
+using Microsoft.AspNetCore.Http;
 using Lab2.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +28,8 @@ namespace Lab2.Controllers
         /// <returns>A list of Comment objects.</returns>
         // GET: api/Comments/?filter=xyz
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public IEnumerable<CommentGetModel> Get([FromQuery]string filter)
         {
             return commentService.GetAll(filter);
