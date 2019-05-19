@@ -9,12 +9,7 @@ namespace Lab2.Service
 {
     public interface IMovieService
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
+
         IEnumerable<Movie> GetAll(DateTime? from = null, DateTime? to = null);
         Movie GetById(int id);
         Movie Create(Movie movie);

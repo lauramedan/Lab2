@@ -64,6 +64,7 @@ namespace Lab2
             // https://stackoverflow.com/questions/38138100/addtransient-addscoped-and-addsingleton-services-differences
             // Dependency Injection
             services.AddScoped<IMovieService, MovieService>();
+            services.AddScoped<ICommentService, CommentService>();
 
         }
 
